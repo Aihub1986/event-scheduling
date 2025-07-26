@@ -21,14 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes (e.g., for login)
 Route::post('/auth/login', [AuthController::class, 'login']);
-
-// Protected routes (require authentication)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
-    // CRUD for Teachers
+// CRUD for Teachers
     Route::apiResource('teachers', TeacherController::class);
 
     // CRUD for Lessons
@@ -40,6 +33,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD for Events
     Route::apiResource('events', EventController::class);
 
+// Protected routes (require authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    
     // Custom API for Event Scheduling with Conflict Check
     Route::post('/events/schedule', [EventController::class, 'schedule']);
 
