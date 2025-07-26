@@ -28,6 +28,8 @@ class TeacherResource extends Resource
                     ->maxLength(255),
                     Select::make('lessons')
     ->multiple()
+    ->searchable()
+    ->preload()
     ->relationship(titleAttribute: 'name'),
                 Forms\Components\TextInput::make('email')
                     ->email()
