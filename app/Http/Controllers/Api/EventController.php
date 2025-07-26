@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -103,6 +104,60 @@ class EventController extends Controller
             'message' => 'Event scheduled successfully.',
             'event' => $event->load(['lesson', 'teacher', 'room']),
         ], 201);
+    }
+
+    /**
+     * Reschedule an existing event with conflict checking.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Event  $event
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reschedule(Request $request, Event $event)
+    {
+        $request->validate([
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'end_time' => 'required|date_format:Y-m-d H:i:s|after:start_time',
+            'room_id' => 'sometimes|exists:rooms,id',
+        ]);
+
+        $roomId = $request->input('room_id', $event->room_id);
+        $startTime = Carbon::parse($request->input('start_time'));
+        $endTime = Carbon::parse($request->input('end_time'));
+
+        // Check for conflicts with the new time/room
+        $this->checkAndPreventConflict($roomId, $startTime, $endTime, $event->id);
+
+        // Update the event
+        $event->update([
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'room_id' => $roomId,
+        ]);
+
+        return response()->json([
+            'message' => 'Event rescheduled successfully.',
+            'event' => $event->load(['lesson', 'teacher', 'room']),
+        ]);
+    }
+
+    /**
+     * Get all events for a specific teacher.
+     *
+     * @param  \App\Models\Teacher  $teacher
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function teacherEvents(Teacher $teacher)
+    {
+        $events = $teacher->events()
+            ->with(['lesson', 'room'])
+            ->orderBy('start_time')
+            ->get();
+
+        return response()->json([
+            'teacher' => $teacher,
+            'events' => $events,
+        ]);
     }
 
     /**
