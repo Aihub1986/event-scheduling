@@ -39,7 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-
     // Custom API for Event Scheduling with Conflict Check
     Route::post('/events/schedule', [EventController::class, 'schedule']);
 
