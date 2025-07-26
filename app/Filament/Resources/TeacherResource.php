@@ -12,7 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use Filament\Forms\Components\Select;
 class TeacherResource extends Resource
 {
     protected static ?string $model = Teacher::class;
@@ -26,6 +26,9 @@ class TeacherResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                    Select::make('lessons')
+    ->multiple()
+    ->relationship(titleAttribute: 'name'),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->unique(ignoreRecord: true)
